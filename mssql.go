@@ -52,6 +52,11 @@ type Driver struct {
 	processQueryText bool
 }
 
+// SetProcessQueryText set processQueryText Externally
+func (d *Driver) SetProcessQueryText(p bool) {
+	d.processQueryText = p
+}
+
 // OpenConnector opens a new connector. Useful to dial with a context.
 func (d *Driver) OpenConnector(dsn string) (*Connector, error) {
 	params, err := parseConnectParams(dsn)
@@ -937,6 +942,16 @@ func (c *Conn) PrepareContext(ctx context.Context, query string) (driver.Stmt, e
 	}
 
 	return c.prepareContext(ctx, query)
+}
+
+func (c *Conn) ExecContext(ctx context.Context, query string, args []driver.NamedValue) (driver.Result, error) {
+	stmt := &Stmt{
+		c:          c,
+		query:      query,
+		paramCount: len(args),
+		notifSub:   nil,
+	}
+	return stmt.ExecContext(ctx, args)
 }
 
 func (s *Stmt) QueryContext(ctx context.Context, args []driver.NamedValue) (driver.Rows, error) {
